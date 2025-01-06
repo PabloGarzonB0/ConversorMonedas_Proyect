@@ -14,7 +14,7 @@ public class LecturaArchivos {
                 System.out.println(line);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("\nEl archivo no fue encontrado.");;
+            System.out.println("\nEl archivo no fue encontrado.");
         }
     }
 }
