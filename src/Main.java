@@ -21,16 +21,12 @@ public class Main{
                     case 0:
                         System.out.println("\n fin programa");
                         System.exit(0);
-
                     case 1:
                         menuConvertirValor();
                         break;
-
                     case 2:
                         System.out.println("Opcion2");
                         break;
-
-
                     default:
                         System.out.println("\n>>> Ninguna de las opciones es valida <<<");
                         break;
@@ -67,7 +63,6 @@ public class Main{
             System.out.println("\n>>> Caracter no valido <<<");
         }
     }
-
     private static void convertirValor(){
         Scanner sc = new Scanner(System.in);
         try{
@@ -85,10 +80,9 @@ public class Main{
 
         } catch (InputMismatchException e) {
             System.out.println("\n>>> Los datos que ingresasste no son validos <<<");
+
         }
     }
-
-
     private static void verCodigoMonedas(){
         String monedas = """
                          \nCODIGOS DE MONEDAS POR PAIS:
