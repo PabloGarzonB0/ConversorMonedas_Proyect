@@ -1,87 +1,106 @@
+import java.io.IOException;
 
-
-import java.util.InputMismatchException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
-public class Main{
+public class Principal {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        while(true){
+        List<String> historial =new ArrayList<>();
+        Scanner scanner = new Scanner(System.in);
+        try{
+            ConversorMoneda conversor = new ConversorMoneda();
+            System.out.println("-------TASAS DE CONVERSION----------");
+            Moneda monedaBase = conversor.buscarMoneda("USD");
+            System.out.println("Tasa de conversion encontradas con exito.");
+            int opcion;
             int EleccionUsuario;
             String menu = """
                 \n::::::::::Conversor de monedas  ::::::::::
-                \t1. Convertor de valor.
-                \t2. Ver ultima consulta.
-                \t0. Salir.
+                \t1. Convertir de valor.
+                \t2. Mostrar monedas disponibles.
+                \t3. Mostrar historial.
+                \t4. Guardar historial en un archivo.
+                \t5. Salir.
                 """;
-            System.out.print(menu+" Eleccion: ");
-            try {
-                EleccionUsuario = sc.nextInt();
-                switch (EleccionUsuario){
-                    case 0:
-                        System.out.println("\n fin programa");
-                        System.exit(0);
-                    case 1:
-                        menuConvertirValor();
-                        break;
-                    case 2:
-                        System.out.println("Opcion2");
-                        break;
-                    default:
-                        System.out.println("\n>>> Ninguna de las opciones es valida <<<");
-                        break;
+
+            do {
+                System.out.print(menu+" Eleccion: ");
+                while (!scanner.hasNext()){
+                    System.out.println("Por favor, ingrese un numero valido valido");
+                    scanner.next(); //Limpieza de buffer
                 }
-            } catch (InputMismatchException e) {
-                System.out.println("\n>>> Caracter no valido <<<");
-            }
+                opcion = scanner.nextInt();
+                switch (opcion) {
+                    case 1:
+                        //Solicitud de moneda y monto
+                        System.out.println("Ingrese la moneda de origen: ");
+                        String monedaOrigen = scanner.next().toUpperCase();
+
+                        System.out.println("Ingrese la moneda de destino: ");
+                        String monedaDestino = scanner.next().toUpperCase();
+
+                        System.out.println("Ingrese  el monto a convertir: ");
+                        while (!scanner.hasNextFloat()){
+                            System.out.println("Por favor, ingrese un valor numerico valido");
+                            scanner.next(); //Limpieza de buffer
+                        }
+                        float monto =scanner.nextFloat();
+                        // Intentar realizar la conversion
+
+                        try{
+                            float resultado = conversor.convertirMoneda(monedaBase, monedaDestino, monedaOrigen, monto);
+                            String registro = String.format("(%s) %.2f %s  convierte a : %.2f %s",
+                                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")),
+                                    monto, monedaOrigen, resultado, monedaDestino);
+                            historial.add(registro);
+
+                        }catch (RuntimeException e) {
+                            System.out.println("Error: " + e.getMessage());
+                        }
+                        break;
+
+                    case 2: //Mostrar monedas disponibles
+                        System.out.println("Monedas disponibles en la API");
+                        verCodigoMonedas();
+                        //conversor.obtenerMonedasDisponibles(monedaBase).forEach(System.out::println);
+                        break;
+
+                    case 3: //Mostrar historial
+                        if (historial.isEmpty()){
+                            System.out.println("No hay conversiones registradas");
+                        }else {
+                            System.out.println("Historial de conversiones");
+                            historial.forEach(System.out::println);
+                        }
+                        break;
+
+                    case 4: //Guardar historial en un archivo
+                        try {
+                            GeneradorDeArchivo generador = new GeneradorDeArchivo();
+                            generador.guardarHistorial(historial);
+                            System.out.println("Historial guardado Exitosamente en historial_conversiones.json");
+
+                        } catch (IOException e) {
+                            System.out.println("Error al guardar el historial: "+ e.getMessage());
+                        }
+                        break;
+                    case 5:
+                        System.out.println("Operaciones de programa finalizadas");
+                        System.exit(0);
+
+                    default:
+                        System.out.println("Opcion valida. Intente nuevamente");
+                }
+
+            }while(opcion != 5);
         }
-    }
-    private static void menuConvertirValor(){
-        Scanner sc = new Scanner(System.in);
-        String menu = """
-                        \n||Ingresando al conversor de moneda||
-                        1. Ingresar a convertir un valor.
-                        2. Ver codigos de moneda por pais.
-                        0. Salir
-                        """;
-        System.out.println(menu + "Elige una opcion : ");
-        try{
-            int eleccionUsuario = sc.nextInt();
-            if (eleccionUsuario == 0) {
-                System.out.println("\nFin del programa.");
-                System.exit(0);
-            } else if (eleccionUsuario == 1) {
-                System.out.println("Metodo de convertir");
-                convertirValor();
-            } else if (eleccionUsuario == 2) {
-                System.out.println("Metodo ver codigo de monedas");
-                verCodigoMonedas();
-            } else {
-                System.out.println("\n>>> Recuerda elegir solo entre las opciones disponibles <<<");
-            }
-        }catch (InputMismatchException e) {
-            System.out.println("\n>>> Caracter no valido <<<");
+        catch (RuntimeException e) {
+            System.out.println("Error al cargar las tasa de conversion: "+ e.getMessage());
         }
-    }
-    private static void convertirValor(){
-        Scanner sc = new Scanner(System.in);
-        try{
-            System.out.println("\nConversion en proceso...");
-            System.out.println("\nEscribe el codigo de la moneda que vas a convertir");
-            String codigoMonedaOrigen = sc.nextLine().toUpperCase();
 
-            System.out.print("\nIngresar la cantidad a convertir: $ ");
-            double valorAconvertir = sc.nextFloat();
-            sc.nextLine(); //Limpieza de buffer
-
-            System.out.print("\nEscribir el codigo de la moneda en la que se va a convertir: ");
-            String codigoMonedaDestino = sc.nextLine().toUpperCase();
-            System.out.println("\nEjecutando conversion.....");
-
-        } catch (InputMismatchException e) {
-            System.out.println("\n>>> Los datos que ingresasste no son validos <<<");
-
-        }
     }
     private static void verCodigoMonedas(){
         String monedas = """
@@ -144,6 +163,5 @@ public class Main{
                          **********************************************************************************************************************************************
                          """;
         System.out.println(monedas);
-        menuConvertirValor();
     }
 }
